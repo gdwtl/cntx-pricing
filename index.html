@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Contix — Configuratore di listino</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#E9EDF1; --sheet:#FFFFFF;
+    --ink:#16283C; --ink-soft:#5D6E7E; --ink-faint:#8C9AA6;
+    --rule:#CBD5DD; --rule-soft:#E4EAEF;
+    --accent:#0E7C66; --accent-wash:#E4F0EC; --amber:#9A6B00;
+  }
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{margin:0;background:var(--paper);color:var(--ink);
+    font-family:"Instrument Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+    font-size:15px;line-height:1.5}
+  .wrap{max-width:1020px;margin:0 auto;padding:40px 24px 64px}
+  header{display:flex;flex-wrap:wrap;gap:12px;align-items:baseline;justify-content:space-between;margin-bottom:32px}
+  h1{font-size:26px;font-weight:600;letter-spacing:-0.02em;margin:0}
+  .tag{font-size:14px;color:var(--ink-soft);margin:0}
+
+  .ladder{display:grid;grid-template-columns:repeat(5,1fr);gap:1px;background:var(--rule);border:1px solid var(--rule);border-radius:4px;overflow:hidden;margin-bottom:10px}
+  .rung{background:var(--sheet);padding:14px 14px 16px}
+  .rung[data-on="1"]{background:var(--accent-wash);box-shadow:inset 0 -3px 0 var(--accent)}
+  .rung h3{font-size:15px;font-weight:600;margin:0}
+  .rung .who{font-size:12.5px;color:var(--ink-faint);margin:1px 0 10px}
+  .rung .fee{font-size:17px;font-weight:600;font-variant-numeric:tabular-nums}
+  .rung .cap{font-size:12.5px;color:var(--ink-soft)}
+  .rung .setup{font-size:12.5px;color:var(--ink-soft);margin-top:6px;padding-top:6px;border-top:1px solid var(--rule-soft);font-variant-numeric:tabular-nums}
+  .ladder-note{font-size:13px;color:var(--ink-faint);margin:0 0 28px}
+
+  .cols{display:grid;grid-template-columns:1fr 380px;gap:28px;align-items:start}
+  .panel{background:var(--sheet);border:1px solid var(--rule);border-radius:4px;padding:22px 24px}
+  .panel + .panel{margin-top:16px}
+  .panel h2{font-size:13px;font-weight:600;color:var(--ink-soft);margin:0 0 16px}
+
+  .field{margin-bottom:18px}
+  .field:last-child{margin-bottom:0}
+  label{display:block;font-size:13.5px;color:var(--ink-soft);margin-bottom:6px}
+  input[type=number],select{font:inherit;font-variant-numeric:tabular-nums;color:var(--ink);
+    background:var(--sheet);border:1px solid var(--rule);border-radius:3px;padding:8px 10px;width:100%;max-width:200px}
+  input:focus-visible,select:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .row2{display:flex;flex-wrap:wrap;gap:20px}
+  .count{font-size:13.5px;color:var(--ink-soft);margin:14px 0 0;padding-top:14px;border-top:1px solid var(--rule-soft);font-variant-numeric:tabular-nums}
+  .count b{font-weight:600;color:var(--ink)}
+
+  .quote{background:var(--sheet);border:1px solid var(--rule);border-radius:4px;position:sticky;top:24px}
+  .quote .top{padding:22px 24px 18px;border-bottom:1px solid var(--rule-soft)}
+  .quote .plan{font-size:13.5px;color:var(--ink-soft);margin:0 0 6px}
+  .price{font-size:46px;font-weight:600;letter-spacing:-0.03em;font-variant-numeric:tabular-nums;line-height:1}
+  .per{font-size:15px;font-weight:400;color:var(--ink-soft);letter-spacing:0}
+  .arr{font-size:13.5px;color:var(--ink-soft);margin-top:8px;font-variant-numeric:tabular-nums}
+  .lines{padding:16px 24px;margin:0;list-style:none;font-size:13.5px}
+  .lines li{display:flex;justify-content:space-between;gap:16px;padding:5px 0;color:var(--ink-soft);font-variant-numeric:tabular-nums}
+  .lines li b{font-weight:500;color:var(--ink)}
+  .lines li.tot{border-top:1px solid var(--rule-soft);margin-top:6px;padding-top:10px;color:var(--ink);font-weight:500}
+  .lines li.gap{margin-top:10px}
+  .unit{padding:0 24px 18px;font-size:13px;color:var(--ink-faint);font-variant-numeric:tabular-nums}
+  .acts{padding:0 24px 22px;display:flex;gap:8px;flex-wrap:wrap}
+  button{font:inherit;font-size:13.5px;cursor:pointer;border-radius:3px;padding:8px 14px;border:1px solid var(--rule);background:var(--sheet);color:var(--ink)}
+  button.pri{background:var(--accent);border-color:var(--accent);color:#fff}
+  button:hover{border-color:var(--ink-soft)}
+  button.pri:hover{background:#0B6353;border-color:#0B6353}
+  .flash{font-size:13px;color:var(--accent);padding:0 24px 18px;min-height:1em;margin:0}
+  .warn{font-size:13px;color:var(--amber);padding:0 24px 16px;margin:0}
+
+  footer{margin-top:32px;font-size:13px;color:var(--ink-faint);max-width:62ch}
+  @media (max-width:860px){
+    .cols{grid-template-columns:1fr}
+    .ladder{grid-template-columns:repeat(2,1fr)}
+    .quote{position:static}
+    .price{font-size:38px}
+  }
+  @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <h1>Configuratore di listino</h1>
+  <p class="tag">Contix · monitoraggio contenuti, varianti e immagini su Amazon</p>
+</header>
+
+<div class="ladder" id="ladder"></div>
+<p class="ladder-note">Il piano si determina sui listing monitorati: un ASIN su tre marketplace conta tre. Tutti i moduli sono inclusi.</p>
+
+<div class="cols">
+
+  <div>
+    <div class="panel">
+      <h2>Catalogo del cliente</h2>
+      <div class="row2">
+        <div class="field">
+          <label for="asin">ASIN unici</label>
+          <input type="number" id="asin" min="1" step="1" value="500">
+        </div>
+        <div class="field">
+          <label for="mkt">Marketplace attivi</label>
+          <select id="mkt">
+            <option>1</option><option>2</option><option>3</option><option>4</option>
+            <option selected>5</option><option>6</option><option>7</option><option>8</option><option>9</option>
+          </select>
+        </div>
+      </div>
+      <p class="count" id="q-count"></p>
+    </div>
+
+    <div class="panel">
+      <h2>Condizioni commerciali</h2>
+      <div class="row2">
+        <div class="field">
+          <label for="disc">Sconto sul canone (%)</label>
+          <input type="number" id="disc" min="0" max="60" step="1" value="0">
+        </div>
+        <div class="field">
+          <label for="term">Fatturazione</label>
+          <select id="term">
+            <option value="0" selected>Mensile</option>
+            <option value="1">Annuale prepagata (−10%)</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="setup">Attivazione</label>
+          <select id="setup">
+            <option value="1" selected>A listino</option>
+            <option value="0.5">Ridotta del 50%</option>
+            <option value="0">Azzerata</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="quote" aria-live="polite">
+    <div class="top">
+      <p class="plan" id="q-plan">—</p>
+      <div class="price" id="q-price">—<span class="per"> / mese</span></div>
+      <p class="arr" id="q-arr">—</p>
+    </div>
+    <ul class="lines" id="q-lines"></ul>
+    <p class="unit" id="q-unit"></p>
+    <p class="warn" id="q-warn" hidden></p>
+    <div class="acts">
+      <button class="pri" id="b-link">Copia link preventivo</button>
+      <button id="b-text">Copia riepilogo</button>
+    </div>
+    <p class="flash" id="q-flash"></p>
+  </div>
+
+</div>
+
+<footer>
+  Un listing è la combinazione di un ASIN e un marketplace, che è l'unità di lavoro
+  reale: contenuti e varianti sono per paese, le immagini sono globali per ASIN.
+  L'attivazione copre collegamento dell'account, mappatura del catalogo e prima
+  passata. Ogni configurazione ha un link proprio, quindi il preventivo si condivide
+  così com'è.
+</footer>
+
+</div>
+
+<script>
+(function(){
+  var PLANS=[
+    {max:1000,    name:"Starter",   fee:500,  setup:300,  who:"primo catalogo"},
+    {max:5000,    name:"Growth",    fee:1200, setup:500,  who:"brand in crescita"},
+    {max:12500,   name:"Pro",       fee:2200, setup:750,  who:"catalogo strutturato"},
+    {max:50000,   name:"Scale",     fee:4000, setup:1250, who:"multi-brand"},
+    {max:Infinity,name:"Enterprise",fee:null, setup:null, who:"su misura"}
+  ];
+  var eur=new Intl.NumberFormat("it-IT",{style:"currency",currency:"EUR",maximumFractionDigits:0});
+  var it=function(n){return n.toLocaleString("it-IT")};
+  var $=function(id){return document.getElementById(id)};
+  var asin=$("asin"), mkt=$("mkt"), disc=$("disc"), term=$("term"), setup=$("setup");
+
+  var ladder=$("ladder");
+  PLANS.forEach(function(p,i){
+    var d=document.createElement("div");
+    d.className="rung"; d.id="rung"+i; d.setAttribute("data-on","0");
+    d.innerHTML="<h3>"+p.name+"</h3><p class='who'>"+p.who+"</p>"+
+      "<div class='fee'>"+(p.fee?eur.format(p.fee):"su richiesta")+"</div>"+
+      "<div class='cap'>"+(p.max===Infinity?"oltre 50.000":"fino a "+it(p.max))+" listing</div>"+
+      "<div class='setup'>"+(p.setup?"attivazione "+eur.format(p.setup):"attivazione su misura")+"</div>";
+    ladder.appendChild(d);
+  });
+
+  function readState(){
+    var q=new URLSearchParams(location.search);
+    if(q.has("a")) asin.value=Math.max(1,parseInt(q.get("a"),10)||500);
+    if(q.has("m")) mkt.value=Math.min(9,Math.max(1,parseInt(q.get("m"),10)||5));
+    if(q.has("d")) disc.value=Math.min(60,Math.max(0,parseInt(q.get("d"),10)||0));
+    if(q.has("t")) term.value=q.get("t")==="1"?"1":"0";
+    if(q.has("s")&&["1","0.5","0"].indexOf(q.get("s"))>-1) setup.value=q.get("s");
+  }
+
+  function compute(){
+    var n=Math.max(1,Math.round(Number(asin.value)||1));
+    var m=Number(mkt.value);
+    var L=n*m;
+    var i=0; while(PLANS[i].max<L) i++;
+    var p=PLANS[i];
+    var base=p.fee!==null?p.fee:4000+(L-50000)*0.03;
+    var setupBase=p.setup!==null?p.setup:2000;
+    var df=1-(Math.min(60,Math.max(0,Number(disc.value)||0))/100);
+    var tf=term.value==="1"?0.9:1;
+    var sf=Number(setup.value);
+    return {n:n,m:m,L:L,plan:p,idx:i,base:base,df:df,tf:tf,
+            monthly:base*df*tf, setupBase:setupBase, sf:sf, setup:setupBase*sf};
+  }
+
+  function render(){
+    var s=compute();
+    PLANS.forEach(function(_,j){$("rung"+j).setAttribute("data-on", j===s.idx?"1":"0")});
+
+    $("q-count").innerHTML=it(s.n)+" ASIN × "+s.m+" marketplace = <b>"+it(s.L)+" listing monitorati</b>";
+    $("q-plan").textContent="Piano "+s.plan.name+" · "+it(s.L)+" listing";
+    $("q-price").innerHTML=eur.format(Math.round(s.monthly))+"<span class='per'> / mese</span>";
+    $("q-arr").textContent=eur.format(Math.round(s.monthly*12))+" di canone annuo";
+
+    var lines=$("q-lines"); lines.innerHTML="";
+    function row(k,v,cls){
+      var li=document.createElement("li");
+      if(cls) li.className=cls;
+      li.innerHTML="<span>"+k+"</span><b>"+v+"</b>";
+      lines.appendChild(li);
+    }
+    row("Canone di piano", eur.format(Math.round(s.base)));
+    if(s.df<1) row("Sconto sul canone","−"+Math.round((1-s.df)*100)+"%");
+    if(s.tf<1) row("Prepagato annuale","−10%");
+    row("Canone mensile", eur.format(Math.round(s.monthly)),"tot");
+    row("Attivazione, una tantum", s.sf===0?"inclusa":eur.format(Math.round(s.setup))+(s.sf<1?" (−50%)":""),"gap");
+    row("Totale primo anno", eur.format(Math.round(s.monthly*12+s.setup)),"tot");
+
+    $("q-unit").textContent=(s.monthly/s.L).toFixed(2).replace(".",",")+" € per listing al mese";
+
+    var warn=$("q-warn");
+    if(s.plan.fee===null){
+      warn.hidden=false;
+      warn.textContent="Sopra i 50.000 listing canone e attivazione sono indicativi: si definiscono in trattativa.";
+    } else if(s.sf===0 && s.df<1){
+      warn.hidden=false;
+      warn.textContent="Sconto sul canone e attivazione azzerata insieme: meglio concedere una sola delle due leve.";
+    } else if(s.monthly<400){
+      warn.hidden=false;
+      warn.textContent="Sotto i 400 € al mese una vendita con demo e onboarding non rientra.";
+    } else { warn.hidden=true; }
+
+    history.replaceState(null,"","?"+new URLSearchParams({a:s.n,m:s.m,
+      d:Math.round((1-s.df)*100), t:s.tf<1?"1":"0", s:String(s.sf)}).toString());
+  }
+
+  function summary(){
+    var s=compute();
+    return ["Contix — piano "+s.plan.name,
+      it(s.n)+" ASIN × "+s.m+" marketplace = "+it(s.L)+" listing monitorati",
+      "Tutti i moduli inclusi: contenuti, varianti, immagini",
+      "Canone: "+eur.format(Math.round(s.monthly))+"/mese ("+eur.format(Math.round(s.monthly*12))+"/anno)",
+      "Attivazione una tantum: "+(s.sf===0?"inclusa":eur.format(Math.round(s.setup))),
+      "Totale primo anno: "+eur.format(Math.round(s.monthly*12+s.setup)),
+      "Equivale a "+(s.monthly/s.L).toFixed(2).replace(".",",")+" € per listing al mese"
+    ].join("\n");
+  }
+
+  function flash(msg){
+    var f=$("q-flash"); f.textContent=msg;
+    clearTimeout(flash.t); flash.t=setTimeout(function(){f.textContent=""},2600);
+  }
+  function copy(text,ok){
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(text).then(function(){flash(ok)},function(){flash("Copia non riuscita, seleziona il testo a mano.")});
+    } else { flash("Copia non disponibile in questo browser."); }
+  }
+
+  [asin,mkt,disc,term,setup].forEach(function(el){
+    el.addEventListener("change",render); el.addEventListener("input",render);
+  });
+  $("b-link").addEventListener("click",function(){copy(location.href,"Link copiato.")});
+  $("b-text").addEventListener("click",function(){copy(summary(),"Riepilogo copiato.")});
+
+  readState();
+  render();
+})();
+</script>
+</body>
+</html>
